@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1785286398819,
+      "tag": "0000_nappy_mister_fear",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785286407277,
+      "tag": "0001_seed_placeholder_model_version",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785353651289,
+      "tag": "0002_reflective_boomer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785353651290,
+      "tag": "0003_enable_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785366000000,
+      "tag": "0004_activate_frontend_demo",
+      "breakpoints": true
+    }
+  ]
+}

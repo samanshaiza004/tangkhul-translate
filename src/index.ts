@@ -1,7 +1,33 @@
-import { Elysia } from "elysia";
+import { createApp } from "./app";
+import { parseEnv, redactDatabaseUrl } from "./config";
+import { checkDatabase as checkDatabaseImpl, createDbClient } from "./db";
+import { createFeedbackRecorder } from "./feedback";
+import { GradioTranslationProvider } from "./provider";
+import { createTranslator } from "./translation";
 
-const app = new Elysia().get("/", () => "Hello Elysia").listen(3000);
+const config = parseEnv(Bun.env);
+const { db } = createDbClient({
+  databaseUrl: config.databaseUrl,
+  nodeEnv: config.nodeEnv,
+});
+const checkDatabase = (timeoutMs?: number) => checkDatabaseImpl(db, timeoutMs);
+const provider = new GradioTranslationProvider({
+  space: config.hfSpace,
+  token: config.hfToken,
+  timeoutMs: config.hfTimeoutMs,
+});
+const translator = createTranslator(db, provider);
+const feedbackRecorder = createFeedbackRecorder(db);
+
+const app = createApp({
+  checkDatabase,
+  translator,
+  feedbackRecorder,
+  config: { nodeEnv: config.nodeEnv },
+});
+
+app.listen(config.port);
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  `tangkhul-translate listening on :${config.port} (db=${redactDatabaseUrl(config.databaseUrl)})`,
 );

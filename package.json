@@ -1,15 +1,40 @@
 {
   "name": "tangkhul-translate",
   "version": "1.0.50",
+  "type": "module",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings",
+    "format": "oxfmt src tests scripts drizzle.config.ts",
+    "format:check": "oxfmt --check src tests scripts drizzle.config.ts",
+    "xss:check": "xss-scan",
+    "vendor:htmx": "bun run scripts/vendor-htmx.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "db:verify-fresh": "bun run scripts/verify-fresh-migrate.ts",
+    "parity:capture": "bun run scripts/capture-parity.ts",
+    "parity:check": "bun run scripts/check-parity.ts",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run xss:check && bun test"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@elysia/html": "1.4.1",
+    "@gradio/client": "2.3.1",
+    "@kitajs/html": "4.2.13",
+    "drizzle-orm": "0.45.2",
+    "elysia": "1.4.29",
+    "postgres": "3.4.9"
   },
   "devDependencies": {
-    "bun-types": "latest"
-  },
-  "module": "src/index.js"
+    "@kitajs/ts-html-plugin": "4.1.4",
+    "@types/bun": "1.3.14",
+    "drizzle-kit": "0.31.10",
+    "htmx.org": "2.0.10",
+    "oxlint": "1.76.0",
+    "oxfmt": "0.61.0",
+    "typescript": "6.0.3"
+  }
 }

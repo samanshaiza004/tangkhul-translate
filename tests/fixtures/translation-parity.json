@@ -1,0 +1,179 @@
+{
+  "captured_at": "2026-07-29T22:55:53.238Z",
+  "baseline_space": {
+    "visibility": "protected",
+    "repository": "chormi/byt5-tang-eng",
+    "revision": "ce73094ca249a2a31cff849489b5a2367a8752da",
+    "endpoint": "/translate"
+  },
+  "model": {
+    "repository": "chormi/tangkhul-byt5",
+    "revision": "f21a5bcd7c358419b9a6d9ce7c68094f4046fcc6"
+  },
+  "prompt": "translate Tangkhul to English: {source}",
+  "generation": {
+    "max_input_length": 512,
+    "max_new_tokens": 256,
+    "num_beams": 4,
+    "early_stopping": true
+  },
+  "fixtures": [
+    {
+      "id": "dual-macron",
+      "kind": "authentic_non_bible",
+      "source_raw": "Āthum rāra.",
+      "english_gloss": "Those two will come.",
+      "stable_runs": 2,
+      "output": "Theyll come.",
+      "output_sha256": "b6273d9cd48b2c379371ec0dd069fccca3072001c3c19e715dc2c95ea0cf2ebd",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "where-are-you",
+      "kind": "bible_derived",
+      "source_raw": "Na kali leili?",
+      "english_gloss": "Where are you?",
+      "stable_runs": 2,
+      "output": "Where are you?",
+      "output_sha256": "0217318f31feb0d83fc26b32e06c3399491ac7ede75f58b0da23fe683bb7516c",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "serpent-negation",
+      "kind": "bible_derived",
+      "source_raw": "Kha phara̱ china sha̱nao chili hānga, “Nani mathimara.”",
+      "english_gloss": "But the serpent said to the woman, ‘You will not die.’",
+      "stable_runs": 2,
+      "output": "The serpent said to the woman, \"You shall not die.\"",
+      "output_sha256": "acba1f7b17a3d4a0bde3a92f6eca6a33f8a63f6236ad2568ee45a87c328bc06b",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "brush-teeth",
+      "kind": "authentic_non_bible",
+      "source_raw": "Aha kashut haolu.",
+      "english_gloss": "Brush your teeth.",
+      "stable_runs": 2,
+      "output": "Aha, scrape it.",
+      "output_sha256": "6f4229534b697f559c236b940bde6bd57a0b0656b9ef6f4b2534df3030d43fb2",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "come-and-see",
+      "kind": "bible_derived",
+      "source_raw": "Rāyanglu.",
+      "english_gloss": "Come and see.",
+      "stable_runs": 2,
+      "output": "Come and see.",
+      "output_sha256": "1faff9ffe5b605e85829c3af7fde66039d26fab1106ba8f07fa0256be044000b",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "bethlehem-multiclause",
+      "kind": "bible_derived",
+      "source_raw": "Ithum Bethlehemli vāusa, kala Prohona ithumli chitheikhami shokkahai otshot chi vāyangsa.",
+      "english_gloss": "Let us go to Bethlehem and see what has happened, which the Lord has made known to us.",
+      "stable_runs": 2,
+      "output": "Let's go up to Bethlehem, and see the things which have happened, which the Lord revealed to us.",
+      "output_sha256": "3057daebfab6c0ec4f00a194f83378919739c6877fa7510f5a843a3549873331",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "festival-at-twelve",
+      "kind": "bible_derived",
+      "source_raw": "Jishuna kum tharāda khani kākashung eina khangachā athishurda phanitli azanga.",
+      "english_gloss": "When Jesus was twelve years old, they attended the festival according to custom.",
+      "stable_runs": 2,
+      "output": "Now when he was twelve years old, he entered into the feast according to the custom.",
+      "output_sha256": "590b8222a42c5ae8ea367f70d5fc2a4c23a99350ea7baaecc0995233d55cbd75",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "transport-multiline",
+      "kind": "transport_probe",
+      "source_raw": "Ithum Bethlehemli vāusa,\nkala Prohona ithumli chitheikhami shokkahai otshot chi vāyangsa.",
+      "stable_runs": 2,
+      "output": "Let's go to Bethlehem, and see the things which have happened, which the Lord revealed to us.",
+      "output_sha256": "3336c52c3994560fd3a52e090bb6312308d65a6a09474e621a9b058b64e360e3",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "transport-four-special-characters",
+      "kind": "transport_probe",
+      "source_raw": "Ā ā A̱ a̱",
+      "stable_runs": 2,
+      "output": "A a Au au Au au",
+      "output_sha256": "aab0481a93ce03de46cbd1437cf4528112cca800ead050b7ff5e65bbcb0b8620",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    },
+    {
+      "id": "transport-whitespace-newline",
+      "kind": "transport_probe",
+      "source_raw": "  Āthum   rāra.\n\nNa kali leili?  ",
+      "stable_runs": 2,
+      "output": "Theyll come.",
+      "output_sha256": "b6273d9cd48b2c379371ec0dd069fccca3072001c3c19e715dc2c95ea0cf2ebd",
+      "runtime_versions": {
+        "python": "3.13.14",
+        "torch": "2.13.0+cu130",
+        "transformers": "5.14.1",
+        "tokenizers": "0.22.2",
+        "gradio": "6.20.0"
+      }
+    }
+  ]
+}
