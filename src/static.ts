@@ -22,6 +22,16 @@ const ASSETS: Record<string, StaticAsset> = {
     contentType: "text/javascript; charset=utf-8",
     cacheControl: "no-cache",
   },
+  "/static/mannerhtml-form-0.2.0.js": {
+    path: "public/mannerhtml-form-0.2.0.js",
+    contentType: "text/javascript; charset=utf-8",
+    cacheControl: "public, max-age=31536000, immutable",
+  },
+  "/static/mannerhtml-register.js": {
+    path: "public/mannerhtml-register.js",
+    contentType: "text/javascript; charset=utf-8",
+    cacheControl: "no-cache",
+  },
 };
 
 export function createStaticRoutes() {

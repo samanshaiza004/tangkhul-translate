@@ -403,6 +403,12 @@ button {
   background: var(--error-paper);
 }
 
+.field-error {
+  margin: 0.4rem 0 0;
+  color: var(--error);
+  font-size: 0.86rem;
+}
+
 .result-card-error {
   border-color: #dcb8ae;
   background: var(--error-paper);

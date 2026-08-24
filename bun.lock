@@ -10,6 +10,7 @@
         "@kitajs/html": "4.2.13",
         "drizzle-orm": "0.45.2",
         "elysia": "1.4.29",
+        "mannerhtml": "0.2.0",
         "postgres": "3.4.9",
       },
       "devDependencies": {
@@ -227,6 +228,8 @@
     "htmx.org": ["htmx.org@2.0.10", "", {}, "sha512-kdeJe7ZVwaS6QMz/ebBIVtZdpwen6L0OQ5GOhPV9MKBb196TCZeZu4yA7ZIQsaLKv7EpXz+So7KSXNuHXhj7Cw=="],
 
     "ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
+
+    "mannerhtml": ["mannerhtml@0.2.0", "", {}, "sha512-/8bbUOnzikSr9m2ELbNWdQBtNChf0SPpil09LvfvDlmbUtoasE1NQ+MImx2HqlC1aLtGs23vSMoMseuWtFck2g=="],
 
     "memoirist": ["memoirist@0.4.0", "", {}, "sha512-zxTgA0mSYELa66DimuNQDvyLq36AwDlTuVRbnQtB+VuTcKWm5Qc4z3WkSpgsFWHNhexqkIooqpv4hdcqrX5Nmg=="],
 
