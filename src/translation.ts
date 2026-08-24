@@ -23,7 +23,11 @@ export interface Translator {
   translate(sourceRaw: string): Promise<TranslationResult>;
 }
 
-export function createTranslator(db: Database, provider: TranslationProvider): Translator {
+export function createTranslator(
+  db: Database,
+  provider: TranslationProvider,
+  options: { expectedSpaceRepository?: string } = {},
+): Translator {
   return {
     async translate(sourceRaw) {
       const sourceNormalized = normalizeSource(sourceRaw);
@@ -32,7 +36,7 @@ export function createTranslator(db: Database, provider: TranslationProvider): T
       }
 
       const activeVersions = await db
-        .select({ id: modelVersions.id })
+        .select({ id: modelVersions.id, spaceRepository: modelVersions.spaceRepository })
         .from(modelVersions)
         .where(eq(modelVersions.active, true))
         .limit(2);
@@ -41,6 +45,14 @@ export function createTranslator(db: Database, provider: TranslationProvider): T
         throw new Error(
           `Expected exactly one active model version, found ${activeVersions.length}.`,
         );
+      }
+
+      if (options.expectedSpaceRepository !== undefined) {
+        if (activeVersions[0]!.spaceRepository !== options.expectedSpaceRepository) {
+          throw new Error(
+            `Configured HF_SPACE ${options.expectedSpaceRepository} does not match active model Space ${activeVersions[0]!.spaceRepository}.`,
+          );
+        }
       }
 
       const startedAt = performance.now();

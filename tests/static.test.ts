@@ -34,6 +34,26 @@ describe("static asset allowlist", () => {
     expect(response.headers.get("Cache-Control")).toBe("no-cache");
     expect(body).toContain("htmx:beforeSwap");
     expect(body).toContain("new Set([422, 429, 500, 503])");
+    expect(body).toContain("bindCorrectionDirtyState");
+  });
+
+  test("keeps translation and feedback announcements in separate live regions", async () => {
+    const response = await createApp({
+      checkDatabase: async () => {},
+      config: { nodeEnv: "test" },
+      translator: { translate: async () => ({ inferenceId: "id", output: "translation" }) },
+    }).handle(
+      new Request("http://localhost/translate", {
+        method: "POST",
+        headers: { "HX-Request": "true", "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ source: "source" }),
+      }),
+    );
+    const body = await response.text();
+
+    expect(body).not.toContain('<section id="result" class="result-region" aria-live=');
+    expect(body).toContain('data-translation-output role="status" aria-live="polite"');
+    expect(body).toContain('<div id="feedback-message" aria-live="polite">');
   });
 
   test.each([

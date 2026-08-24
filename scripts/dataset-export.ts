@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import postgres from "postgres";
 
 import { parseEnv } from "../src/config";
+import { postgresOptions } from "../src/db";
 import {
   BENCHMARK_EXCLUSION_PATH,
   normalizeTargetForDedup,
@@ -33,6 +34,54 @@ interface Candidate {
   qualityTier: "single_review";
   consentVersion: string;
   createdAt: string;
+}
+
+interface RawCandidate {
+  id: string;
+  source_raw: string;
+  source_normalized: string;
+  source_hash: string;
+  target: string;
+  model_output: string;
+  model_repository: string;
+  model_revision: string;
+  space_repository: string;
+  space_revision: string;
+  prompt_version: string;
+  prompt_template: string;
+  generation_config: unknown;
+  domain: string | null;
+  contributor_tags: string[];
+  review_tags: string[];
+  severity: string | null;
+  consent_version: string;
+  created_at: Date | string;
+}
+
+function decodeCandidate(row: RawCandidate): Candidate {
+  return {
+    id: row.id,
+    source: row.source_raw,
+    sourceNormalized: row.source_normalized,
+    sourceHash: row.source_hash,
+    target: row.target,
+    modelOutput: row.model_output,
+    modelRepository: row.model_repository,
+    modelRevision: row.model_revision,
+    spaceRepository: row.space_repository,
+    spaceRevision: row.space_revision,
+    promptVersion: row.prompt_version,
+    promptTemplate: row.prompt_template,
+    generationConfig: row.generation_config,
+    provenance: "public_correction",
+    domain: row.domain,
+    contributorTags: row.contributor_tags,
+    reviewTags: row.review_tags,
+    severity: row.severity,
+    qualityTier: "single_review",
+    consentVersion: row.consent_version,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  };
 }
 
 function arg(name: string): string | undefined {
@@ -66,6 +115,7 @@ function canonicalRecord(candidate: Candidate): Record<string, unknown> {
 
 function normalizeJson(input: unknown, depth: number): unknown {
   if (Array.isArray(input)) return input.map((item) => normalizeJson(item, depth + 1));
+  if (input instanceof Date) return input.toISOString();
   if (input && typeof input === "object") {
     const object = input as Record<string, unknown>;
     const keys = Object.keys(object);
@@ -131,7 +181,10 @@ async function main(): Promise<void> {
   const journalSha256 = createHash("sha256").update(journalBytes).digest("hex");
   const exclusions = await readExclusionList(root);
   const config = parseEnv(Bun.env);
-  const sql = postgres(config.databaseUrl, { ssl: "require", max: 1, prepare: true });
+  const sql = postgres(
+    config.databaseUrl,
+    postgresOptions(config.databaseUrl, config.nodeEnv, { max: 1 }),
+  );
   const tempDir = join(outputRoot, `.${version}.tmp-${process.pid}-${crypto.randomUUID()}`);
   const exportedAt = Bun.env.EXPORT_TIMESTAMP ?? new Date().toISOString();
 
@@ -148,10 +201,10 @@ async function main(): Promise<void> {
         from drizzle.__drizzle_migrations
         order by created_at asc, hash asc
       `;
-      const accepted = await tx<Candidate[]>`
+      const acceptedRows = await tx<RawCandidate[]>`
         select
           f.id,
-          i.source_raw as source,
+          i.source_raw,
           i.source_normalized,
           i.source_hash,
           r.final_translation as target,
@@ -179,6 +232,7 @@ async function main(): Promise<void> {
           and (select count(*) from reviews rx where rx.feedback_id = f.id and rx.decision in ('accept', 'edit_accept')) = 1
         order by i.source_normalized asc, f.id asc
       `;
+      const accepted = acceptedRows.map(decodeCandidate);
       const cardinalityViolations = await tx`
         select f.id, count(r.id)::int as terminal_count
         from feedback f

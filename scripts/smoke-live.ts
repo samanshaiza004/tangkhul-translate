@@ -3,6 +3,7 @@
 import postgres from "postgres";
 
 import { parseEnv } from "../src/config";
+import { postgresOptions } from "../src/db";
 
 const testDatabaseUrl = Bun.env.TEST_DATABASE_URL;
 if (!testDatabaseUrl)
@@ -16,10 +17,10 @@ const child = Bun.spawn(["bun", "run", "src/index.ts"], {
   stdout: "pipe",
   stderr: "pipe",
 });
-const sql = postgres(config.databaseUrl, {
-  ssl: config.databaseUrl.includes("sslmode=disable") ? false : "require",
-  max: 1,
-});
+const sql = postgres(
+  config.databaseUrl,
+  postgresOptions(config.databaseUrl, config.nodeEnv, { max: 1 }),
+);
 
 try {
   const migration = Bun.spawn(["bun", "run", "db:migrate"], {

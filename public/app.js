@@ -5,6 +5,42 @@
   const result = document.querySelector("#result");
   const allowedErrorStatuses = new Set([422, 429, 500, 503]);
 
+  function bindCorrectionDirtyState(form) {
+    if (!(form instanceof HTMLFormElement) || form.dataset.dirtyBound === "true") return;
+
+    const proposed = form.querySelector("#proposed-translation");
+    const note = form.querySelector("#contributor-note");
+    const tags = [...form.querySelectorAll('input[name="tags"]')];
+    const controls = [proposed, note, ...tags].filter(
+      (control) => control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement,
+    );
+    const updateDirty = () => {
+      form.dataset.dirty = String(
+        controls.some((control) => {
+          const current =
+            control instanceof HTMLInputElement && control.type === "checkbox"
+              ? String(control.checked)
+              : control.value;
+          return current !== control.dataset.initialValue;
+        }),
+      );
+    };
+    controls.forEach((control) => {
+      control.dataset.initialValue =
+        control instanceof HTMLInputElement && control.type === "checkbox"
+          ? String(control.checked)
+          : control.value;
+      control.addEventListener("input", () => {
+        updateDirty();
+      });
+      control.addEventListener("change", () => {
+        updateDirty();
+      });
+    });
+    form.dataset.dirty = "false";
+    form.dataset.dirtyBound = "true";
+  }
+
   document.querySelectorAll("[data-character]").forEach((button) => {
     button.addEventListener("click", () => {
       if (!(source instanceof HTMLTextAreaElement)) return;
@@ -42,14 +78,9 @@
     const form = document.querySelector("#correction-form");
     if (!(form instanceof HTMLFormElement) || form.hasAttribute("hidden")) return;
 
-    const proposed = form.querySelector("#proposed-translation");
-    const note = form.querySelector("#contributor-note");
-    const anyTagChecked = form.querySelector('input[name="tags"]:checked') !== null;
-    const hasProposed =
-      proposed instanceof HTMLTextAreaElement && proposed.value.trim().length > 0;
-    const hasNote = note instanceof HTMLTextAreaElement && note.value.trim().length > 0;
+    bindCorrectionDirtyState(form);
 
-    if (!hasProposed && !hasNote && !anyTagChecked) return;
+    if (form.dataset.dirty !== "true") return;
 
     event.preventDefault();
     const proceed = window.confirm(
@@ -72,6 +103,7 @@
       const isHidden = form.hasAttribute("hidden");
       if (isHidden) {
         form.removeAttribute("hidden");
+        bindCorrectionDirtyState(form);
         toggle.setAttribute("aria-expanded", "true");
         form.querySelector("#proposed-translation")?.focus();
       } else {

@@ -115,7 +115,7 @@ export function Page() {
             </form>
           </manner-form>
 
-          <section id="result" class="result-region" aria-live="polite" aria-atomic="true">
+          <section id="result" class="result-region">
             <div class="result-empty">
               <p class="result-label">English</p>
               <p>Your translation will appear here.</p>
@@ -151,7 +151,13 @@ export function TranslationResult({
           Copy
         </button>
       </div>
-      <p class="translation-output" data-translation-output>
+      <p
+        class="translation-output"
+        data-translation-output
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {escapeHtml(output)}
       </p>
       <p class="copy-status" data-copy-status aria-live="polite"></p>

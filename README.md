@@ -7,12 +7,12 @@ specification.
 
 ## Current status
 
-This repository implements Milestones 1 through 4: a migration-managed schema, a working
+This repository implements Milestones 1 through 4 plus the M4.1 hardening pass: a migration-managed schema, a working
 Tangkhul-to-English translation flow, and public feedback capture. The browser posts only to Bun;
 Bun calls the pinned Gradio endpoint and displays a translation only after the exact inference has
 been stored. Every translation shown also carries feedback controls, described below. The maintainer
-review CLI and deterministic dataset export are intentionally CLI-only; no reviewer
-web UI or training automation is included.
+review CLI and deterministic dataset export are intentionally CLI-only; no reviewer web UI or
+training automation is included.
 
 ## Setup
 
@@ -85,7 +85,7 @@ and **Needs correction**. The first two record a lightweight signal (`feedback.s
 and never enter review. **Needs correction** expands a form — prefilled with the exact model
 output — for a corrected translation, optional issue tags, and an optional note; submitting it
 creates a `pending_review` row. No public submission is ever auto-trusted: a correction only
-becomes usable after a maintainer reviews it through the (future) review CLI. At most one feedback
+becomes usable after a maintainer reviews it through the review CLI. At most one feedback
 row exists per translation; a second submission for the same translation is rejected as a duplicate
 without creating a second row.
 
@@ -187,7 +187,8 @@ bun run dataset:export --version 2026-08-12
 Exports use a repeatable-read database snapshot, fail closed on invalid review cardinality, apply
 `data/benchmark-exclusions/v1.txt`, and never overwrite an existing version. If the database insert
 fails after the artifact rename, the command reports an orphaned export and leaves it untouched for
-explicit reconciliation.
+explicit reconciliation. Startup and readiness also fail closed when `HF_SPACE` disagrees with the
+active model provenance; production startup additionally verifies the deployed Space revision.
 
 The permanent production-root smoke starts `src/index.ts` as a real process and uses a deterministic
 provider stub:

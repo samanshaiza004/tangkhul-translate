@@ -2,6 +2,7 @@
 
 import { createDbClient } from "../src/db";
 import { loadNextPending, recordReview } from "../src/review";
+import { QUALITY_TAGS } from "../src/schema";
 import type { QualityTag } from "../src/schema";
 import { parseEnv } from "../src/config";
 
@@ -106,7 +107,7 @@ try {
     const reviewTags = reviewTagsInput
       .split(",")
       .map((tag) => tag.trim())
-      .filter((tag): tag is QualityTag => item.tags.includes(tag as QualityTag));
+      .filter((tag): tag is QualityTag => QUALITY_TAGS.includes(tag as QualityTag));
     const reviewerNote = await ask("Reviewer note (optional): ");
     const result = await recordReview(db, {
       feedbackId: item.feedbackId,

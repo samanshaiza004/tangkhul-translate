@@ -3,13 +3,13 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
 import { parseEnv } from "../src/config";
+import { postgresOptions } from "../src/db";
 
 const config = parseEnv(Bun.env);
-const client = postgres(config.databaseUrl, {
-  ssl: config.databaseUrl.includes("sslmode=disable") ? false : "require",
-  // A migration run needs one dedicated connection, not a pool.
-  max: 1,
-});
+const client = postgres(
+  config.databaseUrl,
+  postgresOptions(config.databaseUrl, config.nodeEnv, { max: 1 }),
+);
 
 try {
   const db = drizzle(client);

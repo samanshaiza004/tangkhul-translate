@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { CONSENT_VERSION } from "../src/consent";
+import { postgresOptions } from "../src/db";
 import { normalizeTargetForDedup, readExclusionList } from "../src/export";
 import { recordReview } from "../src/review";
 
@@ -43,5 +44,12 @@ describe("review and export invariants", () => {
 
   test("keeps consent version as an explicit export invariant", () => {
     expect(CONSENT_VERSION).toBe("contribution-v1");
+  });
+
+  test("shares URL-driven SSL behavior with the exporter", () => {
+    expect(
+      postgresOptions("postgresql://localhost/postgres?sslmode=disable", "test").ssl,
+    ).toBeFalse();
+    expect(postgresOptions("postgresql://db.example/postgres", "production").ssl).toBe("require");
   });
 });
