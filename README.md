@@ -7,11 +7,12 @@ specification.
 
 ## Current status
 
-This repository implements Milestones 1 through 3: a migration-managed schema, a working
+This repository implements Milestones 1 through 4: a migration-managed schema, a working
 Tangkhul-to-English translation flow, and public feedback capture. The browser posts only to Bun;
 Bun calls the pinned Gradio endpoint and displays a translation only after the exact inference has
-been stored. Every translation shown also carries feedback controls, described below. A maintainer
-review CLI and dataset export remain future milestones.
+been stored. Every translation shown also carries feedback controls, described below. The maintainer
+review CLI and deterministic dataset export are intentionally CLI-only; no reviewer
+web UI or training automation is included.
 
 ## Setup
 
@@ -21,7 +22,9 @@ Install the pinned dependencies:
 bun install
 ```
 
-Copy `.env.example` to `.env` and fill in `DATABASE_URL`. `HF_SPACE` defaults to the disposable
+Copy `.env.example` to `.env` and fill in `DATABASE_URL`. The canonical production Supabase project
+is `zwkotkmmdxwbtmxyulff`; the former `gblybekxtsbiciuzqhmu` project is retired/test history and
+must not be used for deployment or exports. `HF_SPACE` defaults to the disposable
 `chormi/byt5-tang-eng-frontend-demo` copy. The copy is currently public, so `HF_TOKEN` is optional;
 if its visibility becomes private, configure a read token only on the Bun server. The original
 protected `chormi/byt5-tang-eng` Space is a read-only parity baseline and must not be modified.
@@ -166,3 +169,35 @@ All seven public tables have RLS enabled with no policies and without `FORCE ROW
 This gives Supabase Data API roles default-deny while the trusted table-owner connection continues
 to work. The Supabase Data API should remain disabled because this application does not use REST,
 GraphQL, or Supabase client libraries.
+
+## Review and export
+
+Maintainers run the review queue locally with a required stable identity:
+
+```sh
+REVIEWER_ID=saman bun run review
+```
+
+Accepted corrections can be exported as immutable, deterministic JSONL artifacts:
+
+```sh
+bun run dataset:export --version 2026-08-12
+```
+
+Exports use a repeatable-read database snapshot, fail closed on invalid review cardinality, apply
+`data/benchmark-exclusions/v1.txt`, and never overwrite an existing version. If the database insert
+fails after the artifact rename, the command reports an orphaned export and leaves it untouched for
+explicit reconciliation.
+
+The permanent production-root smoke starts `src/index.ts` as a real process and uses a deterministic
+provider stub:
+
+```sh
+bun run smoke:production-root
+```
+
+The live-provider smoke is manual and credential-gated:
+
+```sh
+bun run smoke:live
+```

@@ -16,6 +16,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run scripts/migrate.ts",
     "db:verify-fresh": "bun run scripts/verify-fresh-migrate.ts",
+    "review": "bun run scripts/review.ts",
+    "dataset:export": "bun run scripts/dataset-export.ts",
+    "smoke:production-root": "bun run scripts/smoke-production-root.ts",
+    "smoke:live": "bun run scripts/smoke-live.ts",
     "parity:capture": "bun run scripts/capture-parity.ts",
     "parity:check": "bun run scripts/check-parity.ts",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run xss:check && bun test"
@@ -26,6 +30,7 @@
     "@kitajs/html": "4.2.13",
     "drizzle-orm": "0.45.2",
     "elysia": "1.4.29",
+    "mannerhtml": "0.2.0",
     "postgres": "3.4.9"
   },
   "devDependencies": {

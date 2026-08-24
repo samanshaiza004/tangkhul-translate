@@ -50,59 +50,70 @@ export function Page() {
             </p>
           </header>
 
-          <form
-            class="translation-form"
-            attrs={
-              'hx-post="/translate" hx-target="#result" hx-swap="innerHTML" hx-indicator="#translation-status"'
-            }
-          >
-            <div class="field-heading">
-              <label for="tangkhul-input">Tangkhul text</label>
-              <span>Source</span>
-            </div>
-            <textarea
-              id="tangkhul-input"
-              name="source"
-              rows="8"
-              required
-              autofocus
-              placeholder="Āthum rāra."
-            ></textarea>
-
-            <p class="storage-notice">
-              Translations are stored to improve this translator. Avoid private or identifying text.
-            </p>
-
-            <fieldset class="character-tools">
-              <legend>Insert a Tangkhul character</legend>
-              <div class="character-rail">
-                {[
-                  ["Ā", "capital A with macron"],
-                  ["ā", "lowercase a with macron"],
-                  ["A̱", "capital A with macron below"],
-                  ["a̱", "lowercase a with macron below"],
-                ].map(([character, name]) => (
-                  <button
-                    type="button"
-                    class="character-key"
-                    data-character={character}
-                    aria-label={`Insert ${name}`}
-                  >
-                    {escapeHtml(character)}
-                  </button>
-                ))}
+          <manner-form>
+            <form
+              class="translation-form"
+              attrs={
+                'hx-post="/translate" hx-target="#result" hx-swap="innerHTML" hx-indicator="#translation-status" hx-validate="true"'
+              }
+            >
+              <div class="field-heading">
+                <label for="tangkhul-input">Tangkhul text</label>
+                <span>Source</span>
               </div>
-            </fieldset>
-
-            <div class="form-actions">
-              <button type="submit" class="translate-button">
-                Translate
-              </button>
-              <p id="translation-status" class="translation-status htmx-indicator" role="status">
-                Translating… the model may need a moment to wake up.
+              <textarea
+                id="tangkhul-input"
+                name="source"
+                rows="8"
+                required
+                autofocus
+                placeholder="Āthum rāra."
+              ></textarea>
+              <p
+                id="tangkhul-input-error"
+                class="field-error"
+                data-error-for="tangkhul-input"
+                hidden
+              >
+                Enter some Tangkhul text before translating.
               </p>
-            </div>
-          </form>
+
+              <p class="storage-notice">
+                Translations are stored to improve this translator. Avoid private or identifying
+                text.
+              </p>
+
+              <fieldset class="character-tools">
+                <legend>Insert a Tangkhul character</legend>
+                <div class="character-rail">
+                  {[
+                    ["Ā", "capital A with macron"],
+                    ["ā", "lowercase a with macron"],
+                    ["A̱", "capital A with macron below"],
+                    ["a̱", "lowercase a with macron below"],
+                  ].map(([character, name]) => (
+                    <button
+                      type="button"
+                      class="character-key"
+                      data-character={character}
+                      aria-label={`Insert ${name}`}
+                    >
+                      {escapeHtml(character)}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div class="form-actions">
+                <button type="submit" class="translate-button">
+                  Translate
+                </button>
+                <p id="translation-status" class="translation-status htmx-indicator" role="status">
+                  Translating… the model may need a moment to wake up.
+                </p>
+              </div>
+            </form>
+          </manner-form>
 
           <section id="result" class="result-region" aria-live="polite" aria-atomic="true">
             <div class="result-empty">
@@ -117,6 +128,7 @@ export function Page() {
         </footer>
         <script src="/static/htmx-2.0.10.min.js"></script>
         <script src="/static/app.js"></script>
+        <script type="module" src="/static/mannerhtml-register.js"></script>
       </body>
     </html>
   );
@@ -203,44 +215,56 @@ export function FeedbackControls({
         </button>
       </div>
 
-      <form
-        id="correction-form"
-        class="correction-form"
-        hidden
-        attrs={'hx-post="/feedback" hx-target="#feedback-message" hx-swap="innerHTML"'}
-      >
-        <input type="hidden" name="inference_id" value={inferenceId} />
-        <input type="hidden" name="consent_version" value={consentVersion} />
-        <input type="hidden" name="verdict" value="incorrect" />
+      <manner-form>
+        <form
+          id="correction-form"
+          class="correction-form"
+          hidden
+          attrs={
+            'hx-post="/feedback" hx-target="#feedback-message" hx-swap="innerHTML" hx-validate="true"'
+          }
+        >
+          <input type="hidden" name="inference_id" value={inferenceId} />
+          <input type="hidden" name="consent_version" value={consentVersion} />
+          <input type="hidden" name="verdict" value="incorrect" />
 
-        <label for="proposed-translation">Corrected English translation</label>
-        <textarea id="proposed-translation" name="proposed_translation" rows="4">
-          {escapeHtml(output)}
-        </textarea>
+          <label for="proposed-translation">Corrected English translation</label>
+          <textarea id="proposed-translation" name="proposed_translation" rows="4" required>
+            {escapeHtml(output)}
+          </textarea>
+          <p
+            id="proposed-translation-error"
+            class="field-error"
+            data-error-for="proposed-translation"
+            hidden
+          >
+            Enter the corrected English translation.
+          </p>
 
-        <fieldset class="issue-tags">
-          <legend>What was wrong? (optional)</legend>
-          {QUALITY_TAGS.map((tag) => (
-            <label class="issue-tag-option">
-              <input type="checkbox" name="tags" value={tag} />
-              {escapeHtml(TAG_LABELS[tag])}
-            </label>
-          ))}
-        </fieldset>
+          <fieldset class="issue-tags">
+            <legend>What was wrong? (optional)</legend>
+            {QUALITY_TAGS.map((tag) => (
+              <label class="issue-tag-option">
+                <input type="checkbox" name="tags" value={tag} />
+                {escapeHtml(TAG_LABELS[tag])}
+              </label>
+            ))}
+          </fieldset>
 
-        <label for="contributor-note">Anything else? (optional)</label>
-        <textarea id="contributor-note" name="contributor_note" rows="2"></textarea>
+          <label for="contributor-note">Anything else? (optional)</label>
+          <textarea id="contributor-note" name="contributor_note" rows="2"></textarea>
 
-        <div class="consent-notice">
-          {CONSENT_PARAGRAPHS.map((paragraph) => (
-            <p>{escapeHtml(paragraph)}</p>
-          ))}
-        </div>
+          <div class="consent-notice">
+            {CONSENT_PARAGRAPHS.map((paragraph) => (
+              <p>{escapeHtml(paragraph)}</p>
+            ))}
+          </div>
 
-        <button type="submit" class="correction-submit-button">
-          Submit for review
-        </button>
-      </form>
+          <button type="submit" class="correction-submit-button">
+            Submit for review
+          </button>
+        </form>
+      </manner-form>
 
       <div id="feedback-message" aria-live="polite"></div>
     </>
