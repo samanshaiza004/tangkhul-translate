@@ -5,6 +5,7 @@ import type { RouteRateLimitOptions } from "./routes";
 import { createStaticRoutes } from "./static";
 import type { Config } from "./config";
 import type { FeedbackRecorder } from "./feedback";
+import { assignRequestId, getRequestId, logOperational } from "./observability";
 import type { Translator } from "./translation";
 
 export type ResolveClientKey = (ctx: { request: Request; server: unknown }) => string;
@@ -60,13 +61,20 @@ export function createApp({
   };
 
   return new Elysia({ serve: { maxRequestBodySize: 64 * 1024 } })
-    .onRequest(({ set }) => {
+    .onRequest(({ request, set }) => {
+      const requestId = assignRequestId(request);
+      set.headers["X-Request-ID"] = requestId;
       for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
         set.headers[name] = value;
       }
     })
-    .onError(({ error, code, set }) => {
-      console.error("Unhandled request error:", error);
+    .onError(({ error, code, request, set }) => {
+      logOperational("request_error", {
+        request_id: getRequestId(request),
+        code: typeof code === "string" ? code : undefined,
+        error_class: error instanceof Error ? error.constructor.name : typeof error,
+        severity: code === "NOT_FOUND" || code === "VALIDATION" ? "warn" : "error",
+      });
 
       set.status =
         typeof code === "number"

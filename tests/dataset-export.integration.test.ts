@@ -1,11 +1,14 @@
+/* oxlint-disable no-await-in-loop */
+
 import { expect, test } from "bun:test";
-import { readFile, rm } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { eq } from "drizzle-orm";
 
 import { createDbClient } from "../src/db";
 import { createFeedbackRecorder } from "../src/feedback";
+import { sourceHash } from "../src/normalization";
 import { recordReview } from "../src/review";
 import { feedback, inferences, modelVersions } from "../src/schema";
 import { CONSENT_VERSION } from "../src/consent";
@@ -28,6 +31,7 @@ test.skipIf(!testDatabaseUrl)("rehearses review through an immutable dataset exp
 
   const version = `integration-${crypto.randomUUID()}`;
   const outputDir = resolve(root, "exports", version);
+  const exclusionPath = resolve(root, "data/benchmark-exclusions/v1.txt");
   const env = {
     ...Bun.env,
     DATABASE_URL: testDatabaseUrl,
@@ -35,8 +39,9 @@ test.skipIf(!testDatabaseUrl)("rehearses review through an immutable dataset exp
     REVIEWER_ID: "integration-reviewer",
   };
   const { db, client } = createDbClient({ databaseUrl: testDatabaseUrl, nodeEnv: "test" });
-  let inferenceId: string | undefined;
-  let feedbackId: string | undefined;
+  const inferenceIds: string[] = [];
+  const feedbackIds: string[] = [];
+  const originalExclusions = await readFile(exclusionPath);
 
   try {
     const migration = await run(["bun", "run", "db:migrate"], env);
@@ -49,46 +54,62 @@ test.skipIf(!testDatabaseUrl)("rehearses review through an immutable dataset exp
       .limit(1);
     if (!active) throw new Error("The disposable database has no active model version.");
 
-    const [inference] = await db
-      .insert(inferences)
-      .values({
-        sourceRaw: "Āthum rāra.",
-        sourceNormalized: "Āthum rāra.",
-        sourceHash: crypto.randomUUID().replaceAll("-", "").padEnd(64, "0"),
-        normalizationVersion: "test-v1",
-        modelOutput: "Those two will come.",
-        modelVersionId: active.id,
-        latencyMs: 1,
-      })
-      .returning({ id: inferences.id });
-    if (!inference) throw new Error("The test inference was not persisted.");
-    inferenceId = inference.id;
-
     const recorder = createFeedbackRecorder(db);
-    const feedbackResult = await recorder.record({
-      inferenceId,
-      verdict: "incorrect",
-      proposedTranslation: "Those two are coming.",
-      consentVersion: CONSENT_VERSION,
-    });
-    expect(feedbackResult).toEqual({ outcome: "recorded", status: "pending_review" });
+    const candidates = [
+      {
+        sourceRaw: "Āthum rāra.",
+        modelOutput: "Those two will come.",
+        correction: "Those two are coming.",
+      },
+      {
+        sourceRaw: "Na kali leili?",
+        modelOutput: "Where are you?",
+        correction: "Where are you located?",
+      },
+    ];
+    for (const candidate of candidates) {
+      const [inference] = await db
+        .insert(inferences)
+        .values({
+          sourceRaw: candidate.sourceRaw,
+          sourceNormalized: candidate.sourceRaw,
+          sourceHash: sourceHash(candidate.sourceRaw),
+          normalizationVersion: "n1",
+          modelOutput: candidate.modelOutput,
+          modelVersionId: active.id,
+          latencyMs: 1,
+        })
+        .returning({ id: inferences.id });
+      if (!inference) throw new Error("The test inference was not persisted.");
+      inferenceIds.push(inference.id);
 
-    const [storedFeedback] = await db
-      .select({ id: feedback.id })
-      .from(feedback)
-      .where(eq(feedback.inferenceId, inferenceId));
-    if (!storedFeedback) throw new Error("The test feedback was not persisted.");
-    feedbackId = storedFeedback.id;
+      const feedbackResult = await recorder.record({
+        inferenceId: inference.id,
+        verdict: "incorrect",
+        proposedTranslation: candidate.correction,
+        consentVersion: CONSENT_VERSION,
+      });
+      expect(feedbackResult).toEqual({ outcome: "recorded", status: "pending_review" });
 
-    await expect(
-      recordReview(db, {
-        feedbackId,
-        reviewerRef: "integration-reviewer",
-        decision: "accept",
-        finalTranslation: "Those two are coming.",
-        tags: ["wrong_meaning"],
-      }),
-    ).resolves.toMatchObject({ outcome: "recorded", status: "accepted" });
+      const [storedFeedback] = await db
+        .select({ id: feedback.id })
+        .from(feedback)
+        .where(eq(feedback.inferenceId, inference.id));
+      if (!storedFeedback) throw new Error("The test feedback was not persisted.");
+      feedbackIds.push(storedFeedback.id);
+
+      await expect(
+        recordReview(db, {
+          feedbackId: storedFeedback.id,
+          reviewerRef: "integration-reviewer",
+          decision: "accept",
+          finalTranslation: candidate.correction,
+          tags: ["wrong_meaning"],
+        }),
+      ).resolves.toMatchObject({ outcome: "recorded", status: "accepted" });
+    }
+
+    await writeFile(exclusionPath, `${sourceHash(candidates[0]!.sourceRaw)}\n`);
 
     const first = await run(
       ["bun", "run", "dataset:export", "--version", version, "--allow-dirty"],
@@ -104,6 +125,16 @@ test.skipIf(!testDatabaseUrl)("rehearses review through an immutable dataset exp
     const checksums = await readFile(resolve(outputDir, "checksums.txt"), "utf8");
     expect(jsonl).toContain('"target":"Those two are coming."');
     expect(manifest.record_count).toBe(1);
+    expect(jsonl).not.toContain('"source":"Āthum rāra."');
+    expect(jsonl).toContain('"source":"Na kali leili?"');
+    expect(manifest).toMatchObject({
+      benchmark_exclusions: {
+        version: "v1",
+        path: "data/benchmark-exclusions/v1.txt",
+        count: 1,
+        removed_count: 1,
+      },
+    });
     expect(checksums).toContain(`${manifest.jsonl_sha256}  accepted.jsonl`);
 
     const exported =
@@ -119,12 +150,15 @@ test.skipIf(!testDatabaseUrl)("rehearses review through an immutable dataset exp
     expect(second.code).not.toBe(0);
     expect(`${second.stdout}\n${second.stderr}`).toContain("Export directory already exists");
   } finally {
+    await writeFile(exclusionPath, originalExclusions);
     await rm(outputDir, { recursive: true, force: true });
-    if (feedbackId) {
+    for (const feedbackId of feedbackIds) {
       await client`delete from reviews where feedback_id = ${feedbackId}`;
       await client`delete from feedback where id = ${feedbackId}`;
     }
-    if (inferenceId) await client`delete from inferences where id = ${inferenceId}`;
+    for (const inferenceId of inferenceIds) {
+      await client`delete from inferences where id = ${inferenceId}`;
+    }
     await client.end();
   }
 });

@@ -17,9 +17,12 @@
     "db:migrate": "bun run scripts/migrate.ts",
     "db:verify-fresh": "bun run scripts/verify-fresh-migrate.ts",
     "review": "bun run scripts/review.ts",
+    "legacy:import-sheet": "bun run scripts/legacy-import-sheet.ts",
     "dataset:export": "bun run scripts/dataset-export.ts",
     "smoke:production-root": "bun run scripts/smoke-production-root.ts",
+    "smoke:shutdown": "bun run scripts/smoke-shutdown.ts",
     "smoke:live": "bun run scripts/smoke-live.ts",
+    "measure:provider": "bun run scripts/measure-live-provider.ts",
     "parity:capture": "bun run scripts/capture-parity.ts",
     "parity:check": "bun run scripts/check-parity.ts",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run xss:check && bun test"

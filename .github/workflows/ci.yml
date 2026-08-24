@@ -33,6 +33,8 @@ jobs:
       - run: bun run lint
       - run: bun run format:check
       - run: bun run xss:check
+      - run: bun run db:verify-fresh
       - run: bun run db:migrate
       - run: bun test
       - run: bun run smoke:production-root
+      - run: bun run smoke:shutdown

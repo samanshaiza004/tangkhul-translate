@@ -36,6 +36,13 @@
       "when": 1785366000000,
       "tag": "0004_activate_frontend_demo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787607544916,
+      "tag": "0005_fat_living_lightning",
+      "breakpoints": true
     }
   ]
 }

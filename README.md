@@ -165,7 +165,7 @@ Free-tier Supabase projects pause after inactivity, commonly after roughly a wee
 If `/readyz` unexpectedly returns 503 after a quiet period, check whether the Supabase project must
 be manually resumed before diagnosing an application bug.
 
-All seven public tables have RLS enabled with no policies and without `FORCE ROW LEVEL SECURITY`.
+All eight public tables have RLS enabled with no policies and without `FORCE ROW LEVEL SECURITY`.
 This gives Supabase Data API roles default-deny while the trusted table-owner connection continues
 to work. The Supabase Data API should remain disabled because this application does not use REST,
 GraphQL, or Supabase client libraries.
@@ -202,3 +202,21 @@ The live-provider smoke is manual and credential-gated:
 ```sh
 bun run smoke:live
 ```
+
+## Production deployment
+
+The M5 deployment target is Fly.io Machines in the Chicago (`ord`) region. The reproducible
+artifact is committed in [`Dockerfile`](Dockerfile), with host configuration in
+[`fly.toml`](fly.toml) and the operational runbook in [`docs/deployment.md`](docs/deployment.md).
+Fly's authenticated `Fly-Client-IP` header is used for production rate-limit identity; arbitrary
+`X-Forwarded-For` values are ignored. The deployment remains a single persistent Bun process.
+
+The legacy Google Sheet is not a live dependency or trusted training source. Keep its CSV export
+private and use `bun run legacy:import-sheet <csv>` only when an operator is ready to import rows
+as unverified `legacy_google_sheet` records. See [`docs/legacy-google-sheet.md`](docs/legacy-google-sheet.md).
+
+`contribution-v1` currently describes internal storage, review, and translator improvement only; it
+does not grant public dataset redistribution rights. No public redistribution is permitted under
+v1. A future public dataset requires an owner-approved immutable consent version and explicit data
+terms. The repository software license is still an owner decision; no license is implied by the
+public GitHub repository.

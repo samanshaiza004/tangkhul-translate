@@ -9,6 +9,7 @@ import type { FeedbackRecorder } from "./feedback";
 import { ProviderError } from "./provider";
 import { createRateLimiter, hashClientKey } from "./ratelimit";
 import type { RateLimiter, RateLimiterOptions } from "./ratelimit";
+import { getRequestId, logOperational } from "./observability";
 import type { Translator } from "./translation";
 import { TranslationInputError } from "./translation";
 import { FeedbackError, FeedbackStatus, Page, TranslationError, TranslationResult } from "./views";
@@ -131,7 +132,7 @@ export function createRoutes({
         pid: process.pid,
       };
     })
-    .get("/readyz", async ({ set }) => {
+    .get("/readyz", async ({ request, set }) => {
       set.headers["Cache-Control"] = "no-store";
       const startedAt = performance.now();
 
@@ -144,7 +145,10 @@ export function createRoutes({
           latency_ms: Math.round(performance.now() - startedAt),
         };
       } catch (error) {
-        console.error("Database readiness check failed:", error);
+        logOperational("readiness_failed", {
+          request_id: getRequestId(request),
+          error_class: error instanceof Error ? error.constructor.name : typeof error,
+        });
         set.status = 503;
 
         return {
@@ -155,7 +159,7 @@ export function createRoutes({
     })
     .post(
       "/translate",
-      async ({ body, set }) => {
+      async ({ body, request, set }) => {
         set.headers["Cache-Control"] = "no-store";
         set.headers["X-Translation-Fragment"] = "result";
         const source = typeof body.source === "string" ? body.source : "";
@@ -206,7 +210,10 @@ export function createRoutes({
             );
           }
 
-          console.error("Translation failed:", error);
+          logOperational("translation_failed", {
+            request_id: getRequestId(request),
+            error_class: error instanceof Error ? error.constructor.name : typeof error,
+          });
           set.status = 500;
           return (
             <TranslationError
@@ -224,7 +231,7 @@ export function createRoutes({
     )
     .post(
       "/feedback",
-      async ({ body, set }) => {
+      async ({ body, request, set }) => {
         set.headers["Cache-Control"] = "no-store";
         set.headers["X-Feedback-Fragment"] = "feedback";
 
@@ -262,8 +269,9 @@ export function createRoutes({
 
           const sqlstate = (error as { code?: unknown })?.code;
           const constraintName = (error as { constraint_name?: unknown })?.constraint_name;
-          console.error("Feedback recording failed:", {
-            errorClass: error instanceof Error ? error.constructor.name : typeof error,
+          logOperational("feedback_recording_failed", {
+            request_id: getRequestId(request),
+            error_class: error instanceof Error ? error.constructor.name : typeof error,
             sqlstate: typeof sqlstate === "string" ? sqlstate : undefined,
             constraint: typeof constraintName === "string" ? constraintName : undefined,
           });

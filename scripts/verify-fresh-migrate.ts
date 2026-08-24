@@ -25,6 +25,7 @@ const expectedTables = [
   "feedback",
   "feedback_tags",
   "inferences",
+  "legacy_records",
   "model_versions",
   "review_tags",
   "reviews",
@@ -80,7 +81,7 @@ try {
 
     if (rlsRows.length !== expectedTables.length || invalidRls.length > 0) {
       console.error(
-        `Expected RLS enabled without FORCE on all seven tables, got: ${JSON.stringify(rlsRows)}`,
+        `Expected RLS enabled without FORCE on all public tables, got: ${JSON.stringify(rlsRows)}`,
       );
       process.exitCode = 1;
     }

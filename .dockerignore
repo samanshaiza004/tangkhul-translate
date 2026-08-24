@@ -1,0 +1,10 @@
+.env
+.git
+.github
+exports
+node_modules
+tests
+data
+drizzle
+*.log
+

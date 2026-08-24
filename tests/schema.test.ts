@@ -10,6 +10,7 @@ const expectedTables = [
   "feedback",
   "feedback_tags",
   "inferences",
+  "legacy_records",
   "model_versions",
   "review_tags",
   "reviews",

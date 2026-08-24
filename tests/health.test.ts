@@ -19,6 +19,7 @@ describe("health routes", () => {
     expect(typeof body.uptime_s).toBe("number");
     expect(typeof body.pid).toBe("number");
     expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(response.headers.get("X-Request-ID")).toMatch(/^[0-9a-f-]{36}$/);
   });
 
   test("GET /readyz reports a successful database check", async () => {

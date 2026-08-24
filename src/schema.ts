@@ -34,6 +34,11 @@ export const reviewDecisionEnum = pgEnum("review_decision", [
 
 export const reviewSeverityEnum = pgEnum("review_severity", ["minor", "major", "critical"]);
 
+export const legacyVerificationStatusEnum = pgEnum("legacy_verification_status", [
+  "unverified",
+  "review_required",
+]);
+
 export const QUALITY_TAGS = [
   "wrong_meaning",
   "missing_information",
@@ -189,3 +194,25 @@ export const datasetExports = pgTable("dataset_exports", {
   checksum: text("checksum").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const legacyRecords = pgTable(
+  "legacy_records",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    rowFingerprint: text("row_fingerprint").notNull().unique(),
+    sourceRaw: text("source_raw").notNull(),
+    correction: text("correction"),
+    provenance: text("provenance").notNull().default("legacy_google_sheet"),
+    consentVersion: text("consent_version").notNull().default("legacy_or_unknown"),
+    verificationStatus: legacyVerificationStatusEnum("verification_status")
+      .notNull()
+      .default("unverified"),
+    sourceRowNumber: integer("source_row_number").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("legacy_records_status_created_idx").on(table.verificationStatus, table.createdAt),
+    check("legacy_records_provenance_check", sql`${table.provenance} = 'legacy_google_sheet'`),
+    check("legacy_records_consent_check", sql`${table.consentVersion} = 'legacy_or_unknown'`),
+  ],
+);
