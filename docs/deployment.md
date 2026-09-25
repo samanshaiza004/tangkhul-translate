@@ -39,7 +39,7 @@ fly secrets set \
 
 Set `HF_TOKEN` only if the protected/private Space configuration requires it. Do not set
 `SMOKE_PROVIDER` in production. `DATABASE_URL` must belong to canonical Supabase project
-`zwkotkmmdxwbtmxyulff`, using the Supavisor session pooler on port 5432 when the host needs IPv4.
+`gblybekxtsbiciuzqhmu`, using the Supavisor session pooler on port 5432 when the host needs IPv4.
 
 Apply migrations to the canonical database through an authenticated operator connection before
 the first deploy:

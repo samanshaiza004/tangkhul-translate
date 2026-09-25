@@ -23,7 +23,7 @@ bun install
 ```
 
 Copy `.env.example` to `.env` and fill in `DATABASE_URL`. The canonical production Supabase project
-is `zwkotkmmdxwbtmxyulff`; the former `gblybekxtsbiciuzqhmu` project is retired/test history and
+is `gblybekxtsbiciuzqhmu`; the former `zwkotkmmdxwbtmxyulff` project is retired/test history and
 must not be used for deployment or exports. `HF_SPACE` defaults to the disposable
 `chormi/byt5-tang-eng-frontend-demo` copy. The copy is currently public, so `HF_TOKEN` is optional;
 if its visibility becomes private, configure a read token only on the Bun server. The original
@@ -218,5 +218,6 @@ as unverified `legacy_google_sheet` records. See [`docs/legacy-google-sheet.md`]
 `contribution-v1` currently describes internal storage, review, and translator improvement only; it
 does not grant public dataset redistribution rights. No public redistribution is permitted under
 v1. A future public dataset requires an owner-approved immutable consent version and explicit data
-terms. The repository software license is still an owner decision; no license is implied by the
-public GitHub repository.
+terms. The repository software is released under the [MIT License](LICENSE). Contributor
+corrections remain subject to their recorded consent terms; the MIT license does not grant rights
+to redistribute collected language data.
